@@ -1,25 +1,47 @@
-from __future__ import annotations
+from pydantic import BaseModel, Field
 
-from pydantic import BaseModel
+
+class HealthResponse(BaseModel):
+    status: str
+    app: str
+    model_loaded: bool
 
 
 class CustomerSummary(BaseModel):
-    customer_id: int
+    customer_id: str
     country: str
-    orders: int
-    items: int
-    revenue: float
-    last_purchase_days: int
-    recency_score: int
-    frequency_score: int
-    monetary_score: int
-    segment: str
+    recency_days: int
+    frequency: int
+    monetary: float
+    average_line_amount: float
 
 
-class DashboardSummary(BaseModel):
-    total_customers: int
-    total_orders: int
-    total_revenue: float
-    average_order_value: float
-    segment_counts: dict[str, int]
-    top_customers: list[CustomerSummary]
+class CustomerListResponse(BaseModel):
+    total: int
+    customers: list[CustomerSummary]
+
+
+class CustomerDetail(BaseModel):
+    customer_id: str
+    country: str
+    first_purchase_date: str
+    last_purchase_date: str
+    recency_days: int
+    tenure_days: int
+    invoices_count: int
+    line_items_count: int
+    quantity_sum: float
+    monetary: float
+    average_line_amount: float
+    purchase_rate: float
+
+
+class PredictionResponse(BaseModel):
+    customer_id: str
+    segment: str = Field(description="Predicted customer value segment.")
+    probability_high_value: float
+    model_source: str
+
+
+class CountryListResponse(BaseModel):
+    countries: list[str]

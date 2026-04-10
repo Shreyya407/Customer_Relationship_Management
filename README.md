@@ -1,61 +1,140 @@
-# CRM Retail Intelligence
+# Retail CRM Project (FastAPI + MLFlow + React + Jenkins)
 
-Customer relationship management starter project built around the provided online retail dataset.
+This project is a complete starter CRM system built around your `online_retail_listing.csv` dataset.
 
-## What it includes
+It includes:
+- Backend CRM API with customer analytics endpoints.
+- ML pipeline tracked with MLFlow and model artifact generation.
+- Frontend dashboard for customer listing, insights, and prediction.
+- Jenkins CI/CD pipeline (`Jenkinsfile`) that works with either GitHub or Bitbucket repository hosting.
 
-- FastAPI backend for customer analytics and segment summaries
-- React + Vite frontend dashboard
-- MLflow-backed training script for RFM-based customer segmentation
-- GitHub Actions, Bitbucket Pipelines, and Jenkins pipeline definitions
-- Docker Compose for local development
+## Architecture
 
-## Dataset
+### Backend (`backend/`)
+- Framework: FastAPI
+- Dataset parsing: `;` delimiter + decimal comma support
+- Core features:
+  - Customer list with filters
+  - Customer detail analytics
+  - Customer value prediction endpoint
 
-Place the dataset at the repository root as `online_retail_listing.csv`. The backend and ML pipeline read it directly.
+### ML (`backend/ml/`)
+- Tooling: scikit-learn + MLFlow
+- Training script: `backend/ml/train.py`
+- Output model: `backend/ml/artifacts/customer_value_model.joblib`
+- Tracking directory: `backend/ml/mlruns`
 
-## Features
+### Frontend (`frontend/`)
+- Stack: React + Vite
+- Dashboard views:
+  - KPI cards
+  - Customer list and filters
+  - Customer detail panel
+  - On-demand prediction call
 
-- Customer-level RFM metrics
-- Segment labels derived from KMeans clustering
-- KPI cards, customer table, and segment distribution chart in the frontend
-- MLflow experiment tracking for model training runs
+### CI/CD (`Jenkinsfile`)
+- Checkout
+- Install backend dependencies
+- Run backend tests
+- Train ML model
+- Build frontend
+- Archive build artifacts
 
-## Local setup
+## Quick Start (Local)
 
-### Backend
+## 1. Backend setup
 
-```bash
+From project root:
+
+```powershell
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-uvicorn app.main:app --reload
 ```
 
-### Frontend
+Run tests:
 
-```bash
+```powershell
+pytest tests -q
+```
+
+Train model (creates MLFlow run + joblib artifact):
+
+```powershell
+python ml/train.py
+```
+
+Run API:
+
+```powershell
+uvicorn app.main:app --reload --port 8000
+```
+
+## 2. Frontend setup
+
+Open a new terminal from project root:
+
+```powershell
 cd frontend
+Copy-Item .env.example .env
 npm install
 npm run dev
 ```
 
-### Training
+Frontend runs on `http://127.0.0.1:5173` and expects backend on `http://127.0.0.1:8000`.
+
+## 3. API endpoints
+
+- `GET /health`
+- `GET /api/countries`
+- `GET /api/customers?search=&country=&limit=&offset=`
+- `GET /api/customers/{customer_id}`
+- `POST /api/customers/{customer_id}/prediction`
+
+## GitHub / Bitbucket Code Storage
+
+This project works with both providers.
+
+## GitHub
 
 ```bash
-cd backend
-python ml/train.py
+git init
+git add .
+git commit -m "Initial CRM project"
+git remote add origin https://github.com/<username>/<repo>.git
+git branch -M main
+git push -u origin main
 ```
 
-### Docker Compose
+## Bitbucket
 
 ```bash
-docker compose up --build
+git init
+git add .
+git commit -m "Initial CRM project"
+git remote add origin https://bitbucket.org/<workspace>/<repo>.git
+git branch -M main
+git push -u origin main
 ```
 
-## CI/CD files
+## Jenkins CI/CD Setup
 
-- `.github/workflows/ci.yml`
-- `bitbucket-pipelines.yml`
-- `Jenkinsfile`
+1. Create a Jenkins Pipeline job.
+2. Connect the repository (GitHub or Bitbucket).
+3. Ensure Jenkins agent has:
+   - Python 3
+   - pip
+   - Node.js + npm
+4. Set Pipeline Script from SCM and point to `Jenkinsfile` in repo root.
+5. Add webhook from GitHub/Bitbucket to Jenkins for automatic builds on push.
+
+## Notes
+
+- The backend has a fallback heuristic scoring mode if model artifact is not present.
+- Once `python ml/train.py` runs, prediction endpoint automatically uses the trained model.
+- Dataset cleaning follows your project rules:
+  - day-first date parsing
+  - non-positive quantity filtering
+  - decimal comma parsing for `Price`

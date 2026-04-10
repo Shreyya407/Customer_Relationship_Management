@@ -1,15 +1,19 @@
-from __future__ import annotations
+from pathlib import Path
 
-import os
-from dataclasses import dataclass
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-@dataclass(frozen=True)
-class Settings:
-    dataset_path: str = os.getenv("DATASET_PATH", "../online_retail_listing.csv")
-    mlflow_tracking_uri: str = os.getenv("MLFLOW_TRACKING_URI", "file:../mlruns")
-    cors_origins: tuple[str, ...] = tuple(
-        origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if origin.strip()
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="CRM_", case_sensitive=False)
+
+    app_name: str = "Retail CRM API"
+    app_version: str = "0.1.0"
+    dataset_path: Path = Path(__file__).resolve().parents[2] / "online_retail_listing.csv"
+    model_artifact_path: Path = (
+        Path(__file__).resolve().parents[1] / "ml" / "artifacts" / "customer_value_model.joblib"
+    )
+    mlflow_tracking_uri: str = (
+        f"file:{(Path(__file__).resolve().parents[1] / 'ml' / 'mlruns').as_posix()}"
     )
 
 
