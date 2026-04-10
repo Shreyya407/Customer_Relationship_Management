@@ -129,6 +129,8 @@ git push -u origin main
    - Node.js + npm
 4. Set Pipeline Script from SCM and point to `Jenkinsfile` in repo root.
 5. Add webhook from GitHub/Bitbucket to Jenkins for automatic builds on push.
+6. On Windows agents, if Python is not available in `PATH`, set build parameter `WINDOWS_PYTHON` to full `python.exe` path (for example `C:\\Python312\\python.exe`).
+7. If you installed Python after Jenkins was already running, restart the Jenkins service so new `PATH` values are picked up.
 
 ## Notes
 
