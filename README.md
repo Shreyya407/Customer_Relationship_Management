@@ -131,6 +131,7 @@ git push -u origin main
 5. Add webhook from GitHub/Bitbucket to Jenkins for automatic builds on push.
 6. On Windows agents, if Python is not available in `PATH`, set build parameter `WINDOWS_PYTHON` to full `python.exe` path (for example `C:\\Python312\\python.exe`).
 7. If you installed Python after Jenkins was already running, restart the Jenkins service so new `PATH` values are picked up.
+8. For full CI/CD next-step setup (webhooks, deploy, smoke tests), follow `docs/JENKINS_NEXT_STEPS.md`.
 
 ## Notes
 

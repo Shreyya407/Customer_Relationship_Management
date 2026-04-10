@@ -54,7 +54,10 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'WINDOWS_PYTHON', defaultValue: '', description: 'Optional absolute path to python.exe for Windows agents')
+        string(name: 'WINDOWS_PYTHON', defaultValue: 'C:\\Users\\Asus\\AppData\\Local\\Programs\\Python\\Python312\\python.exe', description: 'Optional absolute path to python.exe for Windows agents')
+        booleanParam(name: 'DEPLOY_LOCAL_STAGING', defaultValue: false, description: 'Deploy backend/frontend to a local staging folder after successful build')
+        string(name: 'STAGING_ROOT', defaultValue: 'C:\\JenkinsDeploy\\crm-staging', description: 'Windows staging folder used by deployment scripts')
+        string(name: 'STAGING_PORT', defaultValue: '8010', description: 'Port used by staged backend service for smoke test')
     }
 
     options {
@@ -128,11 +131,36 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy - Local Staging') {
+            when {
+                expression { return !isUnix() && params.DEPLOY_LOCAL_STAGING }
+            }
+            steps {
+                bat "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\deploy_local_staging.ps1 -WorkspacePath \"%WORKSPACE%\" -DeployRoot \"${params.STAGING_ROOT}\" -Port ${params.STAGING_PORT} -PythonExe \"${params.WINDOWS_PYTHON}\""
+            }
+        }
+
+        stage('Smoke Test - Local Staging') {
+            when {
+                expression { return !isUnix() && params.DEPLOY_LOCAL_STAGING }
+            }
+            steps {
+                script {
+                    runPythonOnWindows("scripts\\smoke_test.py --url http://127.0.0.1:${params.STAGING_PORT}/health --timeout-seconds 120")
+                }
+            }
+        }
     }
 
     post {
         always {
             archiveArtifacts artifacts: 'backend/ml/artifacts/*.joblib,frontend/dist/**', allowEmptyArchive: true
+            script {
+                if (!isUnix() && params.DEPLOY_LOCAL_STAGING) {
+                    bat "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\stop_local_staging.ps1 -DeployRoot \"${params.STAGING_ROOT}\""
+                }
+            }
         }
     }
 }
