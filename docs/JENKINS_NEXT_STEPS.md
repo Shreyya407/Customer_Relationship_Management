@@ -125,5 +125,3 @@ Finally, `scripts/stop_local_staging.ps1` is called in `post` to clean up the st
 2. Replace local deploy stage with remote deploy target (VM/App Service/Container).
 3. Add secrets from Jenkins Credentials (API keys, DB URLs) instead of plain env values.
 4. Add rollback script that swaps back to previous artifact if smoke test fails.
-
-
